@@ -28,10 +28,18 @@ const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
   .filter(Boolean);
 
 if (process.env.NODE_ENV === 'production') {
-  const missing = ['MONGODB_URI', 'JWT_SECRET', 'CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET', 'CAMPUS_EMAIL_DOMAIN']
-    .filter((name) => !process.env[name]);
+  const missing = [
+    'MONGODB_URI',
+    'JWT_SECRET',
+    'CLOUDINARY_CLOUD_NAME',
+    'CLOUDINARY_API_KEY',
+    'CLOUDINARY_API_SECRET',
+  ].filter((name) => !process.env[name]);
+
   if (missing.length > 0) {
-    throw new Error(`Missing required production environment variables: ${missing.join(', ')}`);
+    throw new Error(
+      `Missing required production environment variables: ${missing.join(', ')}`
+    );
   }
 }
 
@@ -47,10 +55,21 @@ const io = new Server(httpServer, {
 
 io.use((socket, next) => {
   try {
-    const token = socket.handshake.auth?.token || socket.handshake.query?.token;
-    if (!token) return next(new Error('Authentication required'));
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const token =
+      socket.handshake.auth?.token ||
+      socket.handshake.query?.token;
+
+    if (!token) {
+      return next(new Error('Authentication required'));
+    }
+
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+
     socket.data.userId = decoded.id.toString();
+
     next();
   } catch {
     next(new Error('Invalid socket authentication'));
@@ -92,7 +111,8 @@ const authLimiter = rateLimit({
   max: 20,
   message: {
     success: false,
-    message: 'Too many authentication attempts, please try again later.',
+    message:
+      'Too many authentication attempts, please try again later.',
   },
 });
 
@@ -105,7 +125,9 @@ app.use('/api', generalLimiter);
 // --------------------------------------------------
 
 app.get('/api/health', (req, res) => {
-  const databaseConnected = mongoose.connection.readyState === 1;
+  const databaseConnected =
+    mongoose.connection.readyState === 1;
+
   res.status(200).json({
     success: true,
     status: databaseConnected ? 'ok' : 'degraded',
@@ -138,6 +160,7 @@ io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
   let currentUserId = socket.data.userId;
+
   socket.join(currentUserId);
 
   // Join user's private notification room
@@ -156,15 +179,21 @@ io.on('connection', (socket) => {
         process.env.JWT_SECRET
       );
 
-      if (decoded.id.toString() === userId.toString()) {
+      if (
+        decoded.id.toString() === userId.toString()
+      ) {
         currentUserId = decoded.id.toString();
 
         socket.join(currentUserId);
 
-        console.log(`User ${userId} joined their socket room`);
+        console.log(
+          `User ${userId} joined their socket room`
+        );
       }
     } catch (error) {
-      console.log('Invalid socket authentication');
+      console.log(
+        'Invalid socket authentication'
+      );
     }
   });
 
@@ -208,7 +237,10 @@ io.on('connection', (socket) => {
 
   // Disconnect
   socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+    console.log(
+      'User disconnected:',
+      socket.id
+    );
 
     currentUserId = null;
   });
@@ -253,11 +285,17 @@ app.use((err, req, res, next) => {
   } else if (err.name === 'ValidationError') {
     err.statusCode = 400;
     err.status = 'fail';
-    err.message = Object.values(err.errors).map((validationError) => validationError.message).join(', ');
+    err.message = Object.values(err.errors)
+      .map(
+        (validationError) =>
+          validationError.message
+      )
+      .join(', ');
   } else if (err.code === 11000) {
     err.statusCode = 409;
     err.status = 'fail';
-    err.message = 'A record with those values already exists';
+    err.message =
+      'A record with those values already exists';
   }
 
   if (process.env.NODE_ENV === 'development') {
@@ -283,7 +321,9 @@ const PORT = process.env.PORT || 5000;
 connectDB()
   .then(() => {
     httpServer.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+      console.log(
+        `Server running on port ${PORT}`
+      );
     });
   })
   .catch((err) => {
