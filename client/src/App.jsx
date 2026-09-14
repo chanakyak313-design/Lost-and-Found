@@ -189,8 +189,104 @@ function Sidebar({ view, setView, user, onLogout }) {
   return <aside className="sidebar"><div className="brand"><Compass size={22} /> foundly</div><div className="side-label">Your space</div><nav>{links.map(({ id, icon: Icon, label }) => <button className={`nav-link ${view === id ? 'active' : ''}`} key={id} onClick={() => setView(id)}><Icon size={18} /><span>{label}</span></button>)}</nav><div className="side-label second">Community</div><nav><button className={`nav-link ${view === 'rewards' ? 'active' : ''}`} onClick={() => setView('rewards')}><Trophy size={18} /><span>Good deeds</span></button><button className={`nav-link ${view === 'profile' ? 'active' : ''}`} onClick={() => setView('profile')}><UserRound size={18} /><span>My profile</span></button>{user.role === 'admin' && <button className={`nav-link ${view === 'admin' ? 'active' : ''}`} onClick={() => setView('admin')}><ShieldCheck size={18} /><span>Admin</span></button>}</nav><div className="side-bottom"><div className="mini-profile"><div className="avatar">{(user.name || 'C').slice(0, 1).toUpperCase()}</div><div><strong>{user.name || 'Campus member'}</strong><small>{user.rewardPoints || 35} points</small></div><ChevronDown size={15} /></div><button className="logout-btn" onClick={onLogout}><LogOut size={15} /> Sign out</button></div></aside>;
 }
 
-function Topbar({ user, view, onMenu, setView }) { const titles = { dashboard: 'Good morning', browse: 'Explore the campus', create: 'Make a post', rewards: 'Your good deeds', profile: 'Personal details', notifications: 'Notifications', matches: 'Your possible matches', claims: 'Your claims', admin: 'Admin dashboard', menu: 'Menu' }; return <header className="topbar"><button className="mobile-menu" onClick={onMenu} aria-label="Open menu" title="Open menu"><Menu size={21} /></button><div><span className="top-kicker">THURSDAY, SEPTEMBER 12, 2026</span><h2>{titles[view] || 'Foundly'}{view === 'dashboard' && <span className="hello">, {user.name?.split(' ')[0] || 'friend'}</span>}</h2></div><div className="top-actions"><button className="icon-btn" onClick={() => setView('browse')} aria-label="Search items" title="Search items"><Search size={19} /></button><button className="icon-btn notification" onClick={() => setView('notifications')} aria-label="Open notifications" title="Open notifications"><Bell size={19} /><i /></button><button className="top-avatar" onClick={() => setView('profile')} aria-label="Open profile" title="Open profile">{(user.name || 'C').slice(0, 1).toUpperCase()}</button></div></header>; }
+function Topbar({ user, view, onMenu, setView }) {
+  const [now, setNow] = useState(() => new Date());
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(new Date());
+    }, 60 * 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const hour = now.getHours();
+
+  const greeting =
+    hour >= 5 && hour < 12
+      ? 'Good morning'
+      : hour >= 12 && hour < 17
+        ? 'Good afternoon'
+        : hour >= 17 && hour < 21
+          ? 'Good evening'
+          : 'Good night';
+
+  const dateLabel = new Intl.DateTimeFormat(undefined, {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(now).toUpperCase();
+
+  const titles = {
+    dashboard: greeting,
+    browse: 'Explore the campus',
+    create: 'Make a post',
+    rewards: 'Your good deeds',
+    profile: 'Personal details',
+    notifications: 'Notifications',
+    matches: 'Your possible matches',
+    claims: 'Your claims',
+    admin: 'Admin dashboard',
+    menu: 'Menu',
+  };
+
+  return (
+    <header className="topbar">
+      <button
+        className="mobile-menu"
+        onClick={onMenu}
+        aria-label="Open menu"
+        title="Open menu"
+      >
+        <Menu size={21} />
+      </button>
+
+      <div>
+        <span className="top-kicker">{dateLabel}</span>
+
+        <h2>
+          {titles[view] || 'Foundly'}
+          {view === 'dashboard' && (
+            <span className="hello">
+              , {user.name?.split(' ')[0] || 'friend'}
+            </span>
+          )}
+        </h2>
+      </div>
+
+      <div className="top-actions">
+        <button
+          className="icon-btn"
+          onClick={() => setView('browse')}
+          aria-label="Search items"
+          title="Search items"
+        >
+          <Search size={19} />
+        </button>
+
+        <button
+          className="icon-btn notification"
+          onClick={() => setView('notifications')}
+          aria-label="Open notifications"
+          title="Open notifications"
+        >
+          <Bell size={19} />
+          <i />
+        </button>
+
+        <button
+          className="top-avatar"
+          onClick={() => setView('profile')}
+          aria-label="Open profile"
+          title="Open profile"
+        >
+          {(user.name || 'C').slice(0, 1).toUpperCase()}
+        </button>
+      </div>
+    </header>
+  );
+}
 function Dashboard({ items, itemsError, setView, notify, user }) { const found = items.filter((item) => item.type === 'found').length; return <div className="page fade-in"><section className="hero-banner"><div><span className="eyebrow warm">CAMPUS PULSE</span><h1>What’s looking<br /><em>for you?</em></h1><p>There are <strong>{found} new finds</strong> around campus right now.</p><button className="primary-btn" onClick={() => setView('browse')}>Explore new finds <ArrowRight size={17} /></button></div><div className="hero-illustration"><div className="sun" /><div className="hero-card card-one"><KeyRound size={20} /><strong>Keys</strong><small>Campus reports</small></div><div className="hero-card card-two"><HeartHandshake size={20} /><strong>Community</strong><small>helping each other</small></div><div className="hero-ring" /></div></section>{itemsError && <div className="error-banner">{itemsError}</div>}<div className="section-heading"><div><span className="eyebrow">JUST IN</span><h3>Recent activity</h3></div><button className="text-btn" onClick={() => setView('browse')}>View all <ArrowRight size={15} /></button></div><div className="item-grid">{items.slice(0, 3).map((item) => <ItemCard item={item} key={item._id} notify={notify} />)}</div>{!itemsError && items.length === 0 && <div className="empty-state"><PackageSearch size={35} /><h3>No campus reports yet</h3><p>Be the first person to post a lost or found item.</p></div>}<div className="dashboard-lower"><div className="good-deed"><div className="deed-icon"><Sparkles size={20} /></div><div><span className="eyebrow">A LITTLE EXTRA</span><h3>Good deeds add up.</h3><p>Share a found item and earn points toward your campus impact score.</p></div><button className="round-arrow" onClick={() => setView('create')}><ArrowRight size={18} /></button></div><div className="impact-card"><span className="eyebrow">YOUR IMPACT</span><strong>{user.rewardPoints || 0}</strong><p>points earned</p><div className="progress"><i style={{ width: `${Math.min((user.rewardPoints || 0) / 2, 100)}%` }} /></div></div></div></div>; }
 
 function Browse({ items, notify }) { const [query, setQuery] = useState(''); const [filter, setFilter] = useState('All items'); const filtered = useMemo(() => items.filter((item) => (filter === 'All items' || String(item.category || '').toLowerCase() === filter.toLowerCase()) && `${item.title} ${item.description}`.toLowerCase().includes(query.toLowerCase())), [items, filter, query]); function findNearby() { if (!navigator.geolocation) { notify('Location is not available in this browser.'); return; } navigator.geolocation.getCurrentPosition(() => notify('Nearby reports are now prioritized.'), () => notify('Location access was not granted.')); } return <div className="page fade-in"><div className="browse-intro"><div><span className="eyebrow">OPEN EYES, OPEN HEART</span><h1>Find what’s<br /><em>been found.</em></h1></div><p>Browse the latest reports from your campus community. Something familiar?</p></div><div className="search-row"><div className="search-field"><Search size={19} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by item, place, or detail..." /></div><button className="filter-btn" onClick={findNearby}><Compass size={17} /> Nearby <ChevronDown size={15} /></button></div><div className="category-row">{categories.map((category) => <button key={category} className={filter === category ? 'selected' : ''} onClick={() => setFilter(category)}>{category}</button>)}</div><div className="results-meta"><span><strong>{filtered.length}</strong> stories on the board</span><span className="live-dot"><i /> Live updates</span></div><div className="item-grid browse-grid">{filtered.map((item) => <ItemCard item={item} key={item._id} notify={notify} />)}</div>{filtered.length === 0 && <div className="empty-state"><PackageSearch size={35} /><h3>No matching finds yet</h3><p>Try another search or be the first to post one.</p></div>}</div>; }
