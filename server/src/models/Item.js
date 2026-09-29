@@ -17,11 +17,6 @@ const locationSchema = new mongoose.Schema({
 }, { _id: false });
 
 const itemSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
   type: {
     type: String,
     enum: ['lost', 'found'],

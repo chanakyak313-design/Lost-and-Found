@@ -1,12 +1,11 @@
 import { Router } from 'express';
-import { protect } from '../middleware/auth.js';
 import upload from '../middleware/upload.js';
 import { uploadBuffer } from '../config/cloudinary.js';
 import AppError from '../utils/AppError.js';
 
 const router = Router();
 
-router.post('/', protect, (req, res, next) => {
+router.post('/', (req, res, next) => {
   upload.array('images', 5)(req, res, async (err) => {
     if (err) {
       if (err.code === 'LIMIT_FILE_SIZE') {
@@ -28,11 +27,11 @@ router.post('/', protect, (req, res, next) => {
         return { url: result.secure_url, publicId: result.public_id };
       }));
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         data: { files },
       });
-    } catch (error) {
+    } catch {
       return next(new AppError('Image storage is unavailable. Please try again.', 503));
     }
   });
