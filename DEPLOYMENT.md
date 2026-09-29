@@ -15,10 +15,7 @@ Set these server environment variables:
 NODE_ENV=production
 PORT=5000
 MONGODB_URI=mongodb+srv://...
-JWT_SECRET=<long-random-secret>
-JWT_EXPIRES_IN=7d
 CLIENT_URL=https://your-frontend.example.com
-CAMPUS_EMAIL_DOMAIN=university.edu
 CLOUDINARY_CLOUD_NAME=...
 CLOUDINARY_API_KEY=...
 CLOUDINARY_API_SECRET=...
@@ -49,10 +46,9 @@ The included `vercel.json` and `netlify.toml` keep React routes working after re
 After both deployments:
 
 1. Open `https://your-api.example.com/api/health` and confirm `status: ok` and `database: connected`.
-2. Open the client and register a real account.
+2. Open the client and create a lost item report.
 3. Create a found item with an image and confirm it appears in MongoDB and Cloudinary.
-4. Test a claim using a second account.
-5. Confirm the notification, match, chat, and reward flows.
-6. Restrict MongoDB Atlas Network Access to the API host's egress IPs when your provider supports stable addresses.
+4. Update an item report and mark it resolved.
+5. Restrict MongoDB Atlas Network Access to the API host's egress IPs when your provider supports stable addresses.
 
 Never commit `.env` files or production secrets.
