@@ -8,7 +8,8 @@ import {
 import { io } from 'socket.io-client';
 import { AdminDashboard, Claims, Matches, RealRewards } from './FeatureViews.jsx';
 
-const API = import.meta.env.VITE_API_URL || '/api';
+const configuredApi = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
+const API = configuredApi.endsWith('/api') ? configuredApi : `${configuredApi}/api`;
 const categories = ['All items', 'Electronics', 'Bags', 'Keys', 'Documents', 'Clothing', 'Accessories'];
 async function request(path, options = {}) {
   const token = localStorage.getItem('foundly_token');
