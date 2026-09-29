@@ -136,7 +136,7 @@ function App() {
   if (!user) return <AuthScreen onLogin={login} />;
 
   return (
-    <div className="app-shell">
+    <div className="app-shell app-enter">
       <Sidebar view={view} setView={setView} user={user} onLogout={logout} />
       <main className="main-content">
         <Topbar user={user} view={view} onMenu={() => setView('menu')} setView={setView} />
