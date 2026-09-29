@@ -11,18 +11,6 @@ export const getItems = catchAsync(async (req, res, next) => {
   const skip = (page - 1) * limit;
 
   const filter = {};
-  if (req.query.type) filter.type = req.query.type;
-  if (req.query.category) filter.category = req.query.category;
-  if (req.query.status) filter.status = req.query.status;
-
-  if (req.query.search) {
-    const sanitized = req.query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    filter.$or = [
-      { title: { $regex: sanitized, $options: 'i' } },
-      { description: { $regex: sanitized, $options: 'i' } },
-    ];
-  }
-
   const [items, total] = await Promise.all([
     Item.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
     Item.countDocuments(filter),
